@@ -159,7 +159,7 @@ void setup() {
     Serial.println("");
 
     // Setup Stepper
-    stepper.setSpeed(13);
+    stepper.setSpeed(10);
 
     // Notifica setup stepper
 
