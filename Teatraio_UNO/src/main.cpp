@@ -81,7 +81,7 @@ int menusAmount = 2;
 
 // Profilo luci attuale
 int lightsProfile = 1;
-int lightsProfilesAmount = 3;
+int lightsProfilesAmount = 5;
 
 // Display LCD
 LiquidCrystal_I2C lcdDisplayI2C(LCD_I2C_ADDRESS, LCD_COLS, LCD_ROWS);
