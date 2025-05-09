@@ -1,9 +1,12 @@
+// Libs
 #include <Arduino.h>
 
+#pragma region Definitions
+
 // Pin RGB
-#define RED_PIN 2
-#define GREEN_PIN 3
-#define BLUE_PIN 4
+#define RED_PIN A0
+#define GREEN_PIN A1
+#define BLUE_PIN A2
 
 // Pin Controllo
 #define C_LED_1 22
@@ -20,174 +23,170 @@
 #define C_LED_12 33
 
 // Settings
-#define LED_LIGHT_DELAY 1
+#define MULTIPLEX_INTERVAL 1000
+#define LEDS 12
 
-// Valori set
-int lastLightProfile = 1;
-int lightsProfile = 1;
+#pragma endregion
 
-void setup() {
-    // Seriale
-    Serial.begin(9600);
-    Serial1.begin(9600);
+#pragma region Multiplexing Leds
 
-    // Imposta tutti i pin definiti come OUTPUT
-    pinMode(RED_PIN, OUTPUT);
-    pinMode(GREEN_PIN, OUTPUT);
-    pinMode(BLUE_PIN, OUTPUT);
+// Pin dei leds sotto forma di vettore
+int ledsPins[LEDS] = {
+    C_LED_1,
+    C_LED_2,
+    C_LED_3,
+    C_LED_4,
+    C_LED_5,
+    C_LED_6,
+    C_LED_7,
+    C_LED_8,
+    C_LED_9,
+    C_LED_10,
+    C_LED_11,
+    C_LED_12
+};
 
-    // Pin LED
-    pinMode(C_LED_1, OUTPUT);
-    pinMode(C_LED_2, OUTPUT);
-    pinMode(C_LED_3, OUTPUT);
-    pinMode(C_LED_4, OUTPUT);
-    pinMode(C_LED_5, OUTPUT);
-    pinMode(C_LED_6, OUTPUT);
-    pinMode(C_LED_7, OUTPUT);
-    pinMode(C_LED_8, OUTPUT);
-    pinMode(C_LED_9, OUTPUT);
-    pinMode(C_LED_10, OUTPUT);
-    pinMode(C_LED_11, OUTPUT);
-    pinMode(C_LED_12, OUTPUT);
-}
+// Multiplexing dei Led
+int currentMultiplexingLed = 0;
+unsigned long lastMultiplexUpdate = 0;
 
+// Funzione per il colore
 void setColor(const int red, const int green, const int blue) {
     analogWrite(RED_PIN, red);
     analogWrite(GREEN_PIN, green);
     analogWrite(BLUE_PIN, blue);
 }
 
-void playLedColor(const int led, const int red, const int green, const int blue) {
-    setColor(red, green, blue);
-    digitalWrite(led, LOW);
-    delay(LED_LIGHT_DELAY);
-    digitalWrite(led, HIGH);
-}
+#pragma endregion
 
-/*
- * Profili Luci
- */
+#pragma region Profili Leds
 
-void playProfile1() {
-    playLedColor(C_LED_1, 255, 255, 255); // Bianco
-    playLedColor(C_LED_2, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_3, 247, 39, 36); // Rosso
-    playLedColor(C_LED_4, 246, 122, 252); // Rosa
-    playLedColor(C_LED_5, 255, 255, 255); // Bianco
-    playLedColor(C_LED_6, 244, 233, 1); // Giallo
-    playLedColor(C_LED_7, 246, 165, 29); // Arancione
-    playLedColor(C_LED_8, 244, 233, 1); // Giallo
-    playLedColor(C_LED_9, 255, 255, 255); // Bianco
-    playLedColor(C_LED_10, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_3, 247, 39, 36); // Rosso
-    playLedColor(C_LED_12, 255, 255, 255); // Bianco
-}
+// Settings di controllo
+int lastLightProfile = 1;
+int lightsProfile = 1;
 
-void playProfile2() {
-    playLedColor(C_LED_1, 255, 255, 255); // Bianco
-    playLedColor(C_LED_2, 246, 165, 29); // Arancione
-    playLedColor(C_LED_3, 247, 39, 36); // Rosso
-    playLedColor(C_LED_4, 247, 39, 36); // Rosso
-    playLedColor(C_LED_5, 255, 255, 255); // Bianco
-    playLedColor(C_LED_6, 246, 165, 29); // Arancione
-    playLedColor(C_LED_7, 247, 39, 36); // Rosso
-    playLedColor(C_LED_8, 246, 165, 29); // Arancione
-    playLedColor(C_LED_9, 255, 255, 255); // Bianco
-    playLedColor(C_LED_10, 247, 39, 36); // Rosso
-    playLedColor(C_LED_11, 247, 39, 36); // Rosso
-    playLedColor(C_LED_1, 255, 255, 255); // Bianco
-}
+#pragma region Settings dei profili
 
-void playProfile3() {
-    playLedColor(C_LED_1, 255, 255, 255); // Bianco
-    playLedColor(C_LED_2, 144, 25, 236); // Viola
-    playLedColor(C_LED_3, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_4, 60, 68, 249); // Blu
-    playLedColor(C_LED_5, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_6, 255, 255, 255); // Bianco
-    playLedColor(C_LED_7, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_8, 255, 255, 255); // Bianco
-    playLedColor(C_LED_9, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_10, 60, 68, 249); // Blu
-    playLedColor(C_LED_11, 144, 25, 236); // Viola
-    playLedColor(C_LED_12, 255, 255, 255); // Bianco
-}
+// Profili
+int profiles[5][LEDS][3] = {
+    {
+        {255, 255, 255},    // Bianco
+        {76, 204, 250},     // Azzurro
+        {247, 39, 36},      // Rosso
+        {246, 122, 252},    // Rosa
+        {255, 255, 255},    // Bianco
+        {244, 233, 1},      // Giallo
+        {246, 165, 29},     // Arancione
+        {244, 233, 1},      // Giallo
+        {255, 255, 255},    // Bianco
+        {76, 204, 250},     // Azzurro
+        {247, 39, 36},      // Rosso
+        {255, 255, 255},    // Bianco
+    },
+    {
+        {255, 255, 255},    // Bianco
+        {246, 165, 29},     // Arancione
+        {247, 39, 36},      // Rosso
+        {247, 39, 36},      // Rosso
+        {255, 255, 255},    // Bianco
+        {246, 165, 29},     // Arancione
+        {247, 39, 36},      // Rosso
+        {246, 165, 29},     // Arancione
+        {255, 255, 255},    // Bianco
+        {247, 39, 36},      // Rosso
+        {247, 39, 36},      // Rosso
+        {255, 255, 255},    // Bianco
+    },
+    {
+        {255, 255, 255},    // Bianco
+        {144, 25, 236},     // Viola
+        {76, 204, 250},     // Azzurro
+        {60, 68, 249},      // Blu
+        {76, 204, 250},     // Azzurro
+        {255, 255, 255},    // Bianco
+        {76, 204, 250},     // Azzurro
+        {255, 255, 255},    // Bianco
+        {76, 204, 250},     // Azzurro
+        {60, 68, 249},      // Blu
+        {144, 25, 236},     // Viola
+        {255, 255, 255},    // Bianco
+        },
+    {
+        {255, 255, 255},    // Bianco
+        {32, 182, 39},      // Verde scuro
+        {144, 243, 77},     // Verde chiaro
+        {76, 204, 250},     // Azzurro
+        {32, 182, 39},      // Verde scuro
+        {255, 255, 255},    // Bianco
+        {144, 243, 77},     // Verde chiaro
+        {255, 255, 255},    // Bianco
+        {76, 204, 250},     // Azzurro
+        {144, 243, 77},     // Verde chiaro
+        {32, 182, 39},      // Verde scuro
+        {255, 255, 255},    // Bianco
+    },
+    {
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+        {255, 0, 0},        // Rosso
+    },
+};
 
-void playProfile4() {
-    playLedColor(C_LED_1, 255, 255, 255); // Bianco
-    playLedColor(C_LED_2, 32, 182, 39); // Verde Scuro
-    playLedColor(C_LED_3, 144, 243, 77); // Verde Chiaro
-    playLedColor(C_LED_4, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_5, 32, 182, 39); // Verde Scuro
-    playLedColor(C_LED_6, 255, 255, 255); // Bianco
-    playLedColor(C_LED_7, 144, 243, 77); // Verde Chiaro
-    playLedColor(C_LED_8, 255, 255, 255); // Bianco
-    playLedColor(C_LED_9, 76, 204, 250); // Azzurro
-    playLedColor(C_LED_10, 144, 243, 77); // Verde Chiaro
-    playLedColor(C_LED_11, 32, 182, 39); // Verde Scuro
-    playLedColor(C_LED_12, 255, 255, 255); // Bianco
-}
+#pragma endregion
 
-void playErrorProfile() {
-    playLedColor(C_LED_1, 255, 255, 255);
-    playLedColor(C_LED_2, 255, 255, 255);
-    playLedColor(C_LED_3, 255, 255, 255);
-    playLedColor(C_LED_4, 255, 255, 255);
-    playLedColor(C_LED_5, 255, 255, 255);
-    playLedColor(C_LED_6, 255, 255, 255);
-    playLedColor(C_LED_7, 255, 255, 255);
-    playLedColor(C_LED_8, 255, 255, 255);
-    playLedColor(C_LED_9, 255, 255, 255);
-    playLedColor(C_LED_10, 255, 255, 255);
-    playLedColor(C_LED_11, 255, 255, 255);
-    playLedColor(C_LED_12, 255, 255, 255);
-    delay(500);
-    playLedColor(C_LED_1, 0, 0, 0);
-    playLedColor(C_LED_2, 0, 0, 0);
-    playLedColor(C_LED_3, 0, 0, 0);
-    playLedColor(C_LED_4, 0, 0, 0);
-    playLedColor(C_LED_5, 0, 0, 0);
-    playLedColor(C_LED_6, 0, 0, 0);
-    playLedColor(C_LED_7, 0, 0, 0);
-    playLedColor(C_LED_8, 0, 0, 0);
-    playLedColor(C_LED_9, 0, 0, 0);
-    playLedColor(C_LED_10, 0, 0, 0);
-    playLedColor(C_LED_11, 0, 0, 0);
-    playLedColor(C_LED_12, 0, 0, 0);
-    delay(500);
-}
+#pragma endregion
+
+#pragma region Routine
 
 void playLightsProfile() {
-    // Switch in base al profilo luci
-    switch (lightsProfile) {
-        case 1: {
-            playProfile1();
-            break;
-        }
+    // Millisecondi attuali
+    const unsigned long currentMicroseconds = micros();
 
-        case 2: {
-            playProfile2();
-            break;
-        }
+    // Se da aggiornare, aggiorna
+    if (currentMicroseconds - lastMultiplexUpdate > MULTIPLEX_INTERVAL) {
+        // Aggiorna l'ultimo aggiornamento
+        lastMultiplexUpdate = currentMicroseconds;
 
-        case 3: {
-            playProfile3();
-            break;
-        }
+        // Spegni il led e cambialo
+        digitalWrite(ledsPins[currentMultiplexingLed], HIGH);
+        currentMultiplexingLed = (currentMultiplexingLed + 1) % LEDS;
 
-        case 4: {
-            playProfile4();
-            break;
-        }
-
-        default: {
-            playErrorProfile();
-            break;
-        }
+        // Imposta il nuovo colore in base al profilo e accendi
+        setColor(profiles[lightsProfile][currentMultiplexingLed][0], profiles[lightsProfile][currentMultiplexingLed][1], profiles[lightsProfile][currentMultiplexingLed][2]);
+        digitalWrite(ledsPins[currentMultiplexingLed], LOW);
     }
 }
 
-// Routine
+void setup() {
+    // Seriale
+    Serial.begin(9600);
+    Serial1.begin(9600);
+
+    // Imposta i pin RGB
+    pinMode(RED_PIN, OUTPUT);
+    pinMode(GREEN_PIN, OUTPUT);
+    pinMode(BLUE_PIN, OUTPUT);
+
+    // Pin LED
+    for (const int ledsPin : ledsPins) {
+        pinMode(ledsPin, OUTPUT);
+        digitalWrite(ledsPin, HIGH);
+    }
+
+    // Spegni i pin RGB
+    analogWrite(RED_PIN, 0);
+    analogWrite(GREEN_PIN, 0);
+    analogWrite(BLUE_PIN, 0);
+}
 
 void loop() {
     // Aggiorna l'ultimo profilo
@@ -206,6 +205,8 @@ void loop() {
         Serial.print("\n\r");
     }
 
-    // Avvia il profilo luci
+    // Gestisci i profili luci
     playLightsProfile();
 }
+
+#pragma endregion
