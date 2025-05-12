@@ -119,6 +119,8 @@ void setup() {
     pinMode(CHANGE_MENU_BUTTON, INPUT);
     pinMode(DECREASE_BUTTON, INPUT);
     pinMode(INCREASE_BUTTON, INPUT);
+    pinMode(7, OUTPUT);
+    digitalWrite(7, LOW);
 
     // Notifica setup pulsanti
 
@@ -192,9 +194,6 @@ void loop() {
         increaseMenuAction();
     }
 
-    // Invia al Arduino Mega il numero del profilo delle luci
-    MegaSerial.println(lightsProfile);
-
     // Delay del loop (1k esecuzioni al secondo)
     delay(1);
 }
@@ -261,6 +260,10 @@ void updateMenuName() {
 void increaseMenuAction() {
     if (menu == 0 && lightsProfile < lightsProfilesAmount) {
         lightsProfile++;
+        MegaSerial.println(lightsProfile);
+        digitalWrite(7, HIGH);
+        delay(10);
+        digitalWrite(7, LOW);
         updateMenuName();
     }
     else if (menu == 1) {
@@ -273,6 +276,10 @@ void increaseMenuAction() {
 void decreaseMenuAction() {
     if (menu == 0 && lightsProfile > 1) {
         lightsProfile--;
+        MegaSerial.println(lightsProfile);
+        digitalWrite(7, HIGH);
+        delay(10);
+        digitalWrite(7, LOW);
         updateMenuName();
     }
     else if (menu == 1) {
