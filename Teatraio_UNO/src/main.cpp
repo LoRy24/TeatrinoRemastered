@@ -106,7 +106,10 @@ SoftwareSerial MegaSerial(MEGA_SERIAL_RECEIVE, MEGA_SERIAL_TRANSMIT);
 void setup() {
     // Setup seriale
     Serial.begin(9600);
+
+    // Init seriale Mega
     MegaSerial.begin(9600);
+    MegaSerial.print(0);
 
     // Messaggio avvio seriale
     Serial.println("-------------------------------------------------");
@@ -119,8 +122,6 @@ void setup() {
     pinMode(CHANGE_MENU_BUTTON, INPUT);
     pinMode(DECREASE_BUTTON, INPUT);
     pinMode(INCREASE_BUTTON, INPUT);
-    pinMode(7, OUTPUT);
-    digitalWrite(7, LOW);
 
     // Notifica setup pulsanti
 
@@ -260,10 +261,7 @@ void updateMenuName() {
 void increaseMenuAction() {
     if (menu == 0 && lightsProfile < lightsProfilesAmount) {
         lightsProfile++;
-        MegaSerial.println(lightsProfile);
-        digitalWrite(7, HIGH);
-        delay(10);
-        digitalWrite(7, LOW);
+        MegaSerial.print(lightsProfile - 1);
         updateMenuName();
     }
     else if (menu == 1) {
@@ -276,10 +274,7 @@ void increaseMenuAction() {
 void decreaseMenuAction() {
     if (menu == 0 && lightsProfile > 1) {
         lightsProfile--;
-        MegaSerial.println(lightsProfile);
-        digitalWrite(7, HIGH);
-        delay(10);
-        digitalWrite(7, LOW);
+        MegaSerial.print(lightsProfile - 1);
         updateMenuName();
     }
     else if (menu == 1) {

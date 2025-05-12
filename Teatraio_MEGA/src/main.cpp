@@ -67,10 +67,6 @@ void setColor(const int red, const int green, const int blue) {
 int lastLightProfile = 1;
 int lightsProfile = 1;
 
-// Segnale per aggiornare lo sato dei led
-int lastUpdateProfileSignal = 0;
-int currentUpdateProfileSignal = 0;
-
 #pragma region Settings dei profili
 
 // Profili
@@ -197,15 +193,6 @@ void setup() {
 void loop() {
     // Aggiorna l'ultimo profilo
     lastLightProfile = lightsProfile;
-    currentUpdateProfileSignal = digitalRead(LEDS_UPDATE_PIN);
-
-    // Leggi il nuovo profilo quando inviato
-    //if (lastUpdateProfileSignal == 0 && currentUpdateProfileSignal == 1) {
-    //  if (Serial1.available() > 0) {
-    //    const int newLightsProfile = Serial1.parseInt(); // NOLINT(*-narrowing-conversions)
-    //    lightsProfile = newLightsProfile;
-    //  }
-    //}
 
     if (Serial1.available() > 0) {
         const int newLightsProfile = Serial1.parseInt(); // NOLINT(*-narrowing-conversions)
@@ -221,8 +208,6 @@ void loop() {
 
     // Gestisci i profili luci
     playLightsProfile();
-
-    //lastUpdateProfileSignal = currentUpdateProfileSignal;
 }
 
 #pragma endregion
