@@ -200,11 +200,16 @@ void loop() {
     currentUpdateProfileSignal = digitalRead(LEDS_UPDATE_PIN);
 
     // Leggi il nuovo profilo quando inviato
-    if (lastUpdateProfileSignal == 0 && currentUpdateProfileSignal == 1) {
-      if (Serial1.available() > 0) {
+    //if (lastUpdateProfileSignal == 0 && currentUpdateProfileSignal == 1) {
+    //  if (Serial1.available() > 0) {
+    //    const int newLightsProfile = Serial1.parseInt(); // NOLINT(*-narrowing-conversions)
+    //    lightsProfile = newLightsProfile;
+    //  }
+    //}
+
+    if (Serial1.available() > 0) {
         const int newLightsProfile = Serial1.parseInt(); // NOLINT(*-narrowing-conversions)
         lightsProfile = newLightsProfile;
-      }
     }
 
     // Notifica il cambio in seriale
@@ -217,7 +222,7 @@ void loop() {
     // Gestisci i profili luci
     playLightsProfile();
 
-    lastUpdateProfileSignal = currentUpdateProfileSignal;
+    //lastUpdateProfileSignal = currentUpdateProfileSignal;
 }
 
 #pragma endregion
