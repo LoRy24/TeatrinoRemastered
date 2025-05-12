@@ -22,6 +22,8 @@
 #define C_LED_11 32
 #define C_LED_12 33
 
+#define LEDS_UPDATE_PIN 2
+
 // Settings
 #define MULTIPLEX_INTERVAL 1000
 #define LEDS 12
@@ -64,6 +66,10 @@ void setColor(const int red, const int green, const int blue) {
 // Settings di controllo
 int lastLightProfile = 1;
 int lightsProfile = 1;
+
+// Segnale per aggiornare lo sato dei led
+int lastUpdateProfileSignal = 0;
+int currentUpdateProfileSignal = 0;
 
 #pragma region Settings dei profili
 
@@ -191,11 +197,14 @@ void setup() {
 void loop() {
     // Aggiorna l'ultimo profilo
     lastLightProfile = lightsProfile;
+    currentUpdateProfileSignal = digitalRead(LEDS_UPDATE_PIN);
 
     // Leggi il nuovo profilo quando inviato
-    if (Serial1.available() > 0) {
+    if (lastUpdateProfileSignal == 0 && currentUpdateProfileSignal == 1) {
+      if (Serial1.available() > 0) {
         const int newLightsProfile = Serial1.parseInt(); // NOLINT(*-narrowing-conversions)
         lightsProfile = newLightsProfile;
+      }
     }
 
     // Notifica il cambio in seriale
@@ -207,6 +216,8 @@ void loop() {
 
     // Gestisci i profili luci
     playLightsProfile();
+
+    lastUpdateProfileSignal = currentUpdateProfileSignal;
 }
 
 #pragma endregion
